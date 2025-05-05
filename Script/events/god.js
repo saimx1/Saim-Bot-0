@@ -1,50 +1,53 @@
 module.exports.config = {
 	name: "god",
-	eventType: ["log:unsubscribe","log:subscribe","log:thread-name"],
+	eventType: ["log:unsubscribe", "log:subscribe", "log:thread-name"],
 	version: "1.0.0",
 	credits: "𝐂𝐘𝐁𝐄𝐑 ☢️_𖣘 -𝐁𝐎𝐓 ⚠️ 𝑻𝑬𝑨𝑴_ ☢️",
-	description: "Record bot activity notifications!",
-    envConfig: {
-        enable: true
-    }
+	description: "تسجيل إشعارات نشاط البوت!",
+	envConfig: {
+		enable: true
+	}
 };
 
 module.exports.run = async function({ api, event, Threads }) {
-    const logger = require("../../utils/log");
-    if (!global.configModule[this.config.name].enable) return;
-    var formReport =  "=== 𝐂𝐘𝐁𝐄𝐑 ☢️_𖣘 -𝐁𝐎𝐓 Notification ===" +
-                        "\n\n» Thread mang ID: " + event.threadID +
-                        "\n» Action: {task}" +
-                        "\n» Action created by userID: " + event.author +
-                        "\n» " + Date.now() +" «",
-        task = "";
-    switch (event.logMessageType) {
-        case "log:thread-name": {
-            const oldName = (await Threads.getData(event.threadID)).name || "Name does not exist",
-                    newName = event.logMessageData.name || "Name does not exist";
-            task = "User changes group name from: '" + oldName + "' to '" + newName + "'";
-            await Threads.setData(event.threadID, {name: newName});
-            break;
-        }
-        case "log:subscribe": {
-            if (event.logMessageData.addedParticipants.some(i => i.userFbId == api.getCurrentUserID())) task = "The user added the bot to a new group!";
-            break;
-        }
-        case "log:unsubscribe": {
-            if (event.logMessageData.leftParticipantFbId== api.getCurrentUserID()) task = "The user kicked the bot out of the group!"
-            break;
-        }
-        default: 
-            break;
-    }
+	const logger = require("../../utils/log");
+	if (!global.configModule[this.config.name].enable) return;
 
-    if (task.length == 0) return;
+	var formReport =  "=== إشعار من البوت ===" +
+					  "\n\n» رقم معرف المجموعة: " + event.threadID +
+					  "\n» النشاط: {task}" +
+					  "\n» تم بواسطة المستخدم صاحب المعرف: " + event.author +
+					  "\n» " + Date.now() + " «",
+		task = "";
 
-    formReport = formReport
-    .replace(/\{task}/g, task);
-  var god = "100086680386976";
+	switch (event.logMessageType) {
+		case "log:thread-name": {
+			const oldName = (await Threads.getData(event.threadID)).name || "لا يوجد اسم سابق",
+				  newName = event.logMessageData.name || "لا يوجد اسم جديد";
+			task = "قام أحد المستخدمين بتغيير اسم المجموعة من: '" + oldName + "' إلى '" + newName + "'";
+			await Threads.setData(event.threadID, { name: newName });
+			break;
+		}
+		case "log:subscribe": {
+			if (event.logMessageData.addedParticipants.some(i => i.userFbId == api.getCurrentUserID()))
+				task = "تمت إضافة البوت إلى مجموعة جديدة!";
+			break;
+		}
+		case "log:unsubscribe": {
+			if (event.logMessageData.leftParticipantFbId == api.getCurrentUserID())
+				task = "قام أحد المستخدمين بطرد البوت من المجموعة!";
+			break;
+		}
+		default:
+			break;
+	}
 
-    return api.sendMessage(formReport, god, (error, info) => {
-        if (error) return logger(formReport, "[ Logging Event ]");
-    });
+	if (task.length == 0) return;
+
+	formReport = formReport.replace(/\{task}/g, task);
+	var god = "100086680386976"; // عدّل هذا إلى معرفك إذا أردت أن تصلك الإشعارات
+
+	return api.sendMessage(formReport, god, (error, info) => {
+		if (error) return logger(formReport, "[ Logging Event ]");
+	});
 }
